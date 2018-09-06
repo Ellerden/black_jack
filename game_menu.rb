@@ -59,6 +59,7 @@ end
 
   def guest_turn
     loop do
+      puts "Ваш ход. Выберите действие:"
       puts OPTIONS
       input = gets.chomp.to_i
       send MENU_METHODS[input] || break
@@ -102,17 +103,27 @@ end
     end
   end
 
+  def guest_won?
+    true if @guest.sum > @dealer.sum && !@guest.lost? ||
+       @guest.sum < @dealer.sum && @dealer.lost?
+  end
+
+  def dealer_won?
+    true if @guest.sum < @dealer.sum && !@dealer.lost? ||
+            @guest.sum > @dealer.sum && @guest.lost?
+  end
+
   def winner
-    if guest.sum > dealer.sum && !guest.lost?
-      guest.money += BET * 2
-      result = "Вы выиграли #{BET}$. У вас на счету #{guest.money}"
-    elsif guest.sum < dealer.sum && !dealer.lost?
-      dealer.money += BET * 2
-      result = "Вы проиграли #{BET}$. У вас на счету #{guest.money}"
+    if guest_won?
+      @guest.money += BET * 2
+      result = "Вы выиграли #{BET}$. У вас на счету #{@guest.money}$"
+    elsif dealer_won?
+      @dealer.money += BET * 2
+      result = "Вы проиграли #{BET}$. У вас на счету #{guest.money}$"
     else
-      guest.money += BET
-      dealer.money += BET
-      result = "Ничья. У вас на счету #{guest.money}"
+      @guest.money += BET
+      @dealer.money += BET
+      result = "Ничья. У вас на счету #{guest.money}$"
     end
   end
 
