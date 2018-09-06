@@ -30,8 +30,7 @@ class Player
     true
   end
 
-  def reset_game
-    @money = 100
+  def empty_hand
     @hand = []
     @sum = 0
   end
