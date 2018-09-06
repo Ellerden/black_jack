@@ -118,10 +118,8 @@ end
 
   def showdown
     puts "Карты на стол... Посчитаем..."
-    print @guest.show_hand
-    print ".Сумма #{@guest.sum}"
-    puts @dealer.show_hand
-    print ".Сумма #{@dealer.sum}"
+    puts "У вас на руках: #{@guest.show_hand}. Сумма очков: #{@guest.sum}"
+    puts "У дилера на руках: #{@dealer.show_hand}. Сумма очков: #{@dealer.sum}"
     puts winner
     after_showdown
   end
