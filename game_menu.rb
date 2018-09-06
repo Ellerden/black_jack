@@ -16,7 +16,7 @@ class GameMenu
   MENU_METHODS3 = { 1 => :reset }.freeze
   BET = 10
 
-attr_accessor :deck, :guest, :dealer, :result
+attr_accessor :deck, :guest, :dealer, :result, :ready_to_open
 
   def initialize(deck, guest, dealer)
     @deck = deck
@@ -26,8 +26,11 @@ attr_accessor :deck, :guest, :dealer, :result
   end
 
   def start_round
+    # подчищаем все значения перед каждым раундом
+    @ready_to_open = false
     @guest.empty_hand
     @dealer.empty_hand
+
     puts "#{@guest.name}, у вас на счету #{@guest.money}$, ставка #{BET}$."
     puts "@guest.enough_money #{@guest.enough_money?}"
     puts  "@dealer.enough_money? #{@dealer.enough_money?}"
@@ -41,11 +44,11 @@ attr_accessor :deck, :guest, :dealer, :result
     user_input = gets.chomp.to_i
     send MENU_METHODS3[user_input] || abort
   end
+
 # и пользователю и дилеру раздается по 2 карты
 def first_bet
   puts "Дилер раздает карты..."
   sleep(1)
-  # и пользователю и дилеру раздается по 2 карты
   2.times do
     guest.hit(@deck.card)
     dealer.hit(@deck.card)
@@ -59,7 +62,7 @@ end
 
   def guest_turn
     loop do
-      puts "Ваш ход. Выберите действие:"
+      puts "Ваш ход, #{@name}. Выберите действие:"
       puts OPTIONS
       input = gets.chomp.to_i
       send MENU_METHODS[input] || break
@@ -71,11 +74,12 @@ end
     case choice
     when :hold
       puts "Дилеру хватит"
-      showdown if @guest.hand.size == 3
+      # eсли у пользователя на руках 3 карты или он до этого захотел вскрываться
+      showdown if @guest.hand.size == 3 || @ready_to_open
     when :hit
       dealer.hit(deck.card) if @dealer.hand.size < 3
       puts "Дилер взял карту"
-      showdown if @guest.hand.size == 3
+      showdown if @guest.hand.size == 3 || @ready_to_open
     end
   end
 
@@ -89,7 +93,7 @@ end
 
   def guest_hit
     if @guest.hand.size < 3
-      puts "Дилер кладет карту... это"
+      puts "Дилер кладет карту..."
       sleep(1)
       @guest.hit(@deck.card)
       puts "#{@guest.last_card}"
@@ -105,12 +109,12 @@ end
 
   def guest_won?
     true if @guest.sum > @dealer.sum && !@guest.lost? ||
-       @guest.sum < @dealer.sum && @dealer.lost?
+       @guest.sum < @dealer.sum && @dealer.lost? && !@guest.lost?
   end
 
   def dealer_won?
     true if @guest.sum < @dealer.sum && !@dealer.lost? ||
-            @guest.sum > @dealer.sum && @guest.lost?
+            @guest.sum > @dealer.sum && @guest.lost? && !@dealer.lost?
   end
 
   def winner
@@ -127,7 +131,13 @@ end
     end
   end
 
+  def open_cards
+    ready_to_open = true
+    dealer_turn
+  end
+
   def showdown
+    if
     puts "Карты на стол... Посчитаем..."
     puts "У вас на руках: #{@guest.show_hand}. Сумма очков: #{@guest.sum}"
     puts "У дилера на руках: #{@dealer.show_hand}. Сумма очков: #{@dealer.sum}"
