@@ -11,9 +11,9 @@ class GameMenu
   OPTIONS2 = ['1 - Новая партия', '0 - Выход из игры']
   OPTIONS3 = ['1 - Обнулить результат и начать заново', '0 - Выход из игры']
   MENU_METHODS = { 1 => :guest_hit, 2 => :dealer_turn,
-                   3 => :showdown}.freeze
-  MENU_METHODS2 = { 1 => :start_round}.freeze
-  MENU_METHODS3 = {1 => :reset}.freeze
+                   3 => :showdown }.freeze
+  MENU_METHODS2 = { 1 => :start_round }.freeze
+  MENU_METHODS3 = { 1 => :reset }.freeze
   BET = 10
 
 attr_accessor :deck, :guest, :dealer, :result
@@ -57,6 +57,27 @@ def first_bet
   puts "У вас на руках: #{@guest.show_hand}. Сумма очков: #{@guest.sum}"
 end
 
+  def guest_turn
+    loop do
+      puts OPTIONS
+      input = gets.chomp.to_i
+      send MENU_METHODS[input] || break
+    end
+  end
+
+  def dealer_turn
+    choice = dealer.decide
+    case choice
+    when :hold
+      puts "Дилеру хватит"
+      showdown if @guest.hand.size == 3
+    when :hit
+      dealer.hit(deck.card) if @dealer.hand.size < 3
+      puts "Дилер взял карту"
+      showdown if @guest.hand.size == 3
+    end
+  end
+
   def reset
     @guest.money = 100
     @dealer.money = 100
@@ -81,35 +102,12 @@ end
     end
   end
 
-  def guest_turn
-    loop do
-      puts OPTIONS
-      input = gets.chomp.to_i
-      send MENU_METHODS[input] || break
-    end
-  end
-
-  def dealer_turn
-    choice = dealer.decide
-    case choice
-    when :hold
-      puts "Дилеру хватит"
-      showdown if @guest.hand.size == 3
-    when :hit
-      dealer.hit(deck.card) if @dealer.hand.size < 3
-      puts "Дилер взял карту"
-      showdown if @guest.hand.size == 3
-    end
-  end
-
   def winner
     if guest.sum > dealer.sum && !guest.lost?
       guest.money += BET * 2
-      dealer.money -= BET
       result = "Вы выиграли #{BET}$. У вас на счету #{guest.money}"
     elsif guest.sum < dealer.sum && !dealer.lost?
       dealer.money += BET * 2
-      guest.money -= 10
       result = "Вы проиграли #{BET}$. У вас на счету #{guest.money}"
     else
       guest.money += BET
@@ -132,7 +130,7 @@ end
     loop do
       puts OPTIONS2
       input = gets.chomp.to_i
-      send MENU_METHODS2[input] || break
+      send MENU_METHODS2[input] || abort
     end
   end
 

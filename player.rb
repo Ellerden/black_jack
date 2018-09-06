@@ -21,8 +21,8 @@ class Player
    #puts "#{card.name}#{card.suit} - #{card.value}"
   # print @hand
     count(@hand)
-    print @hand.each {|card| card.name}
-    puts 'Game over!' if lost?
+  #  print @hand.each {|card| card.name}
+   # puts 'Game over!' if lost?
   end
 
   def enough_money?
@@ -38,7 +38,7 @@ class Player
   def show_hand
     result = []
      @hand.each { |card| result << "#{card.name}#{card.suit}"}
-     result.to_s
+     result.join(', ').to_s
   end
 
   def last_card
