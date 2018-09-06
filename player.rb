@@ -36,7 +36,7 @@ class Player
     @sum = 0
   end
 
-  def show
+  def show_hand
     result = []
      @hand.each { |card| result << "#{card.name}#{card.suit}"}
      result.to_s
@@ -48,6 +48,7 @@ class Player
 
   def bet
     raise 'Недостаточно денег для ставки.' unless enough_money?
+    @money -= SINGLE_BET
   end
 
   # Это перенести в Game - если lost - то можно только пропустить ход и посмотреть что будет у дилера
