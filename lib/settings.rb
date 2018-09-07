@@ -3,4 +3,5 @@ module Settings
   BET = 10
   BJ = 21
   MAX_CARDS = 3
+  DEALER_TURNING_POINT = 17
 end

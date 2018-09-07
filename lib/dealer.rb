@@ -2,6 +2,6 @@ require_relative 'player'
 
 class Dealer < Player
   def decide
-    @sum < 17 ? :hit : :hold
+    @sum < DEALER_TURNING_POINT ? :hit : :hold
   end
 end
