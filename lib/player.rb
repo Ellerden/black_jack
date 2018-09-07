@@ -1,23 +1,24 @@
 require_relative 'deck'
 require_relative 'counter'
+require_relative 'settings'
 
 class Player
   include Counter
+  include Settings
   attr_accessor :name, :hand, :money
-  BET = 10
 
   def initialize(name)
     @name = name
     @hand = []
-    @money = 100
+    @money = STARTING_MONEY
   end
 
   def lost?
-    true if @sum > 21
+    true if @sum > BJ
   end
 
   def hit(card)
-    @hand << card if @hand.size < 3
+    @hand << card if @hand.size < MAX_CARDS
     count(@hand)
   end
 
@@ -34,7 +35,7 @@ class Player
   def show_hand
     result = []
     @hand.each { |card| result << "#{card.name}#{card.suit}" }
-    result.join(', ').to_s
+    "#{result.join(', ')}. Очки: #{@sum}"
   end
 
   def last_card
