@@ -1,16 +1,16 @@
 require_relative 'deck'
-require_relative 'counter'
 require_relative 'settings'
 
 class Player
-  include Counter
   include Settings
-  attr_accessor :name, :hand, :money
+  attr_reader :name
+  attr_accessor :hand, :money, :sum
 
   def initialize(name)
     @name = name
     @hand = []
     @money = STARTING_MONEY
+    @sum = 0
   end
 
   def lost?
@@ -19,7 +19,7 @@ class Player
 
   def hit(card)
     @hand << card if @hand.size < MAX_CARDS
-    count(@hand)
+    count_hand
   end
 
   def enough_money?
@@ -36,6 +36,12 @@ class Player
     result = []
     @hand.each { |card| result << "#{card.name}#{card.suit}" }
     "#{result.join(', ')}. Очки: #{@sum}"
+  end
+
+  def count_hand
+    # проверка если добавить 11 не будет ли перебора - будет туз 11 или 1?
+    @hand.last.value = 11 if @hand.last.name == 'A' && @sum + 11 <= BJ
+    @sum += @hand.last.value
   end
 
   def last_card

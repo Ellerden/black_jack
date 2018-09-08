@@ -3,8 +3,8 @@ require_relative 'lib/deck'
 require_relative 'lib/player'
 require_relative 'lib/guest'
 require_relative 'lib/dealer'
-require_relative 'lib/counter'
 require_relative 'lib/game'
+require_relative 'lib/game_menu'
 
 puts 'Добро пожаловать в игру Black Jack. Как вас зовут?'
 name = gets.chomp

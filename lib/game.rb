@@ -2,24 +2,19 @@ require_relative 'player'
 require_relative 'card'
 require_relative 'deck'
 require_relative 'guest'
-require_relative 'counter'
 require_relative 'dealer'
 require_relative 'settings'
-require_relative 'game_menu'
 
 class Game
   include Settings
-
-  attr_reader :deck, :guest, :dealer
-  attr_accessor :guest_ready_to_open, :dealer_chosen, :menu
+  DEALER_MASK = '*******'.freeze
+  attr_reader :deck, :guest, :dealer, :menu, :guest_ready_to_open, :dealer_chosen
 
   def initialize(deck, guest, dealer)
     @guest = guest
     @dealer = dealer
     @deck = deck
-    @menu = GameMenu.new(self)
-    # после создания инстанса меню, вызываем новую игру
-    @menu.new_game
+    new_round
   end
 
   def roll_to_default
@@ -30,15 +25,29 @@ class Game
   end
 
   # и пользователю и дилеру раздается по 2 карты
-  def first_bet
+  def new_round
     # все значения обнуляются кроме суммы перед каждым раундом
     roll_to_default
+    money_valid?
     2.times do
       @guest.hit(@deck.card)
       @dealer.hit(@deck.card)
     end
-    @guest.bet
-    @dealer.bet
+  end
+
+  def money_valid?
+    raise 'У вас недостаточно денег на счету' unless @guest.enough_money?
+    raise "У #{@game.dealer.name} недостаточно денег на счету" unless @dealer.enough_money?
+    true
+  end
+
+  def guest_hand
+    @guest.show_hand
+  end
+
+  def dealer_hand
+    # если ход дилера уже был то можно показывать по Вскрываемся карты дилера
+    @dealer_chosen ? @dealer.show_hand : DEALER_MASK
   end
 
   def dealer_turn
@@ -46,28 +55,31 @@ class Game
     @dealer_chosen = true
     case choice
     when :hold
-      'Дилеру хватит'
-      # eсли у пользователя на руках 3 карты или он до этого захотел вскрываться
+      # 'Дилеру хватит'
     when :hit
       @dealer.hit(deck.card) if @dealer.hand.size < MAX_CARDS
-      'Дилер взял карту'
+      # 'Дилер взял карту'
     end
   end
 
   def showdown?
-    true if @guest.hand.size == MAX_CARDS || @guest_ready_to_open
-  end
-
-  def open_cards
-    @guest_ready_to_open = true
-    @dealer_chosen ? @menu.showdown : @menu.dealer_turn
+    # eсли у пользователя на руках 3 карты или он до этого захотел вскрываться и дилер уже ходил
+    return true if @dealer_chosen && (@guest_ready_to_open || @guest.hand.size == MAX_CARDS)
+    false
   end
 
   def guest_hit
-    # Больше трех карт на руках быть не может
     return unless @guest.hand.size < MAX_CARDS
     @guest.hit(@deck.card)
-    @guest.last_card
+  end
+
+  def guest_pass_turn
+    dealer_turn
+  end
+
+  def guest_open_cards
+    @guest_ready_to_open = true
+    dealer_turn unless @dealer_chosen
   end
 
   def guest_won?
@@ -80,17 +92,16 @@ class Game
             @guest.sum > @dealer.sum && @guest.lost? && !@dealer.lost?
   end
 
-  def winner
+  def declare_winner
+    @guest.bet
+    @dealer.bet
     if guest_won?
       @guest.money += BET * 2
-      "Вы выиграли #{BET}$. У вас на счету #{@guest.money}$"
     elsif dealer_won?
       @dealer.money += BET * 2
-      "Вы проиграли #{BET}$. У вас на счету #{@guest.money}$"
     else
       @guest.money += BET
       @dealer.money += BET
-      "Ничья. У вас на счету #{@guest.money}$"
     end
   end
 end
