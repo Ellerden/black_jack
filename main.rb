@@ -11,6 +11,5 @@ name = gets.chomp
 puts "#{name}, cыграем?!"
 guest = Guest.new(name)
 dealer = Dealer.new('Dealer Joe')
-deck = Deck.new
-game = Game.new(deck, guest, dealer)
+game = Game.new(guest, dealer)
 GameMenu.new(game)

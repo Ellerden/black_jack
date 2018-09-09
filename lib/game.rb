@@ -10,14 +10,14 @@ class Game
   DEALER_MASK = '*******'.freeze
   attr_reader :deck, :guest, :dealer, :menu, :guest_ready_to_open, :dealer_chosen
 
-  def initialize(deck, guest, dealer)
+  def initialize(guest, dealer)
     @guest = guest
     @dealer = dealer
-    @deck = deck
     new_round
   end
 
   def roll_to_default
+    @deck = Deck.new
     @guest_ready_to_open = false
     @dealer_chosen = false
     @guest.empty_hand
@@ -26,7 +26,7 @@ class Game
 
   # и пользователю и дилеру раздается по 2 карты
   def new_round
-    # все значения обнуляются кроме суммы перед каждым раундом
+    # берется новая колода, все значения обнуляются кроме суммы перед каждым раундом.
     roll_to_default
     money_valid?
     2.times do
